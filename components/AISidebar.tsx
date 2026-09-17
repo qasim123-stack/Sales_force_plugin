@@ -1,5 +1,7 @@
 import { BriefCard } from "@/components/BriefCard"
 import { CommitmentTracker } from "@/components/CommitmentTracker"
+import { DealSummary, type DealSummaryContact } from "@/components/DealSummary"
+import type { Stage } from "@/lib/supabase/types"
 
 export function AISidebar({
   dealId,
@@ -7,12 +9,22 @@ export function AISidebar({
   companyName,
   nextMeeting,
   championName,
+  stage,
+  daysInStage,
+  value,
+  repName,
+  contacts,
 }: {
   dealId: string
   role: string
   companyName: string
   nextMeeting: string | null
   championName: string | null
+  stage: Stage
+  daysInStage: number
+  value: number | null
+  repName: string
+  contacts: DealSummaryContact[]
 }) {
   const isManager = role === "manager"
 
@@ -28,10 +40,14 @@ export function AISidebar({
       <CommitmentTracker dealId={dealId} readOnly={isManager} />
 
       {isManager && (
-        <div className="mb-3 rounded-lg border border-gray-100 p-4">
-          <h2 className="font-semibold text-gray-900">📊 Deal Summary</h2>
-          <p className="mt-2 text-sm text-gray-400">Coming soon</p>
-        </div>
+        <DealSummary
+          stage={stage}
+          daysInStage={daysInStage}
+          value={value}
+          repName={repName}
+          contacts={contacts}
+          nextMeeting={nextMeeting}
+        />
       )}
     </aside>
   )

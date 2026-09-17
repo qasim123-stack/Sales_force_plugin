@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation"
 
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { DealDetail, type DealDetailContact, type DealDetailDeal, type DealDetailMeetingNote } from "@/components/DealDetail"
 import { AISidebar } from "@/components/AISidebar"
 
 interface DealWithCompanyId extends DealDetailDeal {
   company_id: string | null
+  rep_id: string | null
 }
 
 export default async function DealPage({ params }: { params: { id: string } }) {
@@ -16,7 +18,7 @@ export default async function DealPage({ params }: { params: { id: string } }) {
   const { data: dealRaw, error: dealError } = await supabase
     .from("deals")
     .select(
-      "id, title, stage, value, next_meeting, days_in_stage, company_id, companies(id, name, industry)"
+      "id, title, stage, value, next_meeting, days_in_stage, company_id, rep_id, companies(id, name, industry)"
     )
     .eq("id", params.id)
     .single()
@@ -45,6 +47,13 @@ export default async function DealPage({ params }: { params: { id: string } }) {
   const role = (userData.user?.user_metadata?.role as string) ?? "rep"
   const champion = (contacts ?? []).find((contact) => contact.is_champion)
 
+  let repName = "Unassigned"
+  if (deal.rep_id) {
+    const adminClient = createAdminClient()
+    const { data: repUser } = await adminClient.auth.admin.getUserById(deal.rep_id)
+    repName = (repUser.user?.user_metadata?.name as string) ?? repUser.user?.email ?? "Unassigned"
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)]">
       <DealDetail deal={deal} contacts={contacts ?? []} meetingNotes={meetingNotes ?? []} />
@@ -54,6 +63,11 @@ export default async function DealPage({ params }: { params: { id: string } }) {
         companyName={deal.companies?.name ?? "Unknown company"}
         nextMeeting={deal.next_meeting}
         championName={champion?.name ?? null}
+        stage={deal.stage}
+        daysInStage={deal.days_in_stage}
+        value={deal.value}
+        repName={repName}
+        contacts={contacts ?? []}
       />
     </div>
   )
