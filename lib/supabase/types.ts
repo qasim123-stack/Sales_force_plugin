@@ -30,6 +30,7 @@ export interface Database {
           name?: string
           industry?: string | null
         }
+        Relationships: []
       }
       contacts: {
         Row: {
@@ -59,6 +60,7 @@ export interface Database {
           is_champion?: boolean
           is_economic_buyer?: boolean
         }
+        Relationships: []
       }
       deals: {
         Row: {
@@ -94,6 +96,7 @@ export interface Database {
           days_in_stage?: number
           created_at?: string
         }
+        Relationships: []
       }
       meeting_notes: {
         Row: {
@@ -123,6 +126,7 @@ export interface Database {
           processed?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       commitments: {
         Row: {
@@ -161,6 +165,7 @@ export interface Database {
           created_by?: string | null
           created_at?: string
         }
+        Relationships: []
       }
       briefs: {
         Row: {
@@ -190,6 +195,7 @@ export interface Database {
           risk_flags?: string[]
           generated_at?: string
         }
+        Relationships: []
       }
       embeddings: {
         Row: {
@@ -213,7 +219,12 @@ export interface Database {
           embedding?: number[]
           created_at?: string
         }
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }

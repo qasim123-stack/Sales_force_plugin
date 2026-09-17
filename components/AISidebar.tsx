@@ -1,4 +1,5 @@
 import { BriefCard } from "@/components/BriefCard"
+import { CommitmentTracker } from "@/components/CommitmentTracker"
 
 export function AISidebar({
   dealId,
@@ -24,10 +25,7 @@ export function AISidebar({
         nextMeeting={nextMeeting}
       />
 
-      <div className="mb-3 rounded-lg border border-gray-100 p-4">
-        <h2 className="font-semibold text-gray-900">✓ Commitments</h2>
-        <p className="mt-2 text-sm text-gray-400">Coming soon</p>
-      </div>
+      <CommitmentTracker dealId={dealId} readOnly={isManager} />
 
       {isManager && (
         <div className="mb-3 rounded-lg border border-gray-100 p-4">
