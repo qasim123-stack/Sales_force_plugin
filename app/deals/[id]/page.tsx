@@ -43,11 +43,18 @@ export default async function DealPage({ params }: { params: { id: string } }) {
   const meetingNotes = meetingNotesRaw as unknown as DealDetailMeetingNote[]
 
   const role = (userData.user?.user_metadata?.role as string) ?? "rep"
+  const champion = (contacts ?? []).find((contact) => contact.is_champion)
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)]">
       <DealDetail deal={deal} contacts={contacts ?? []} meetingNotes={meetingNotes ?? []} />
-      <AISidebar dealId={deal.id} role={role} />
+      <AISidebar
+        dealId={deal.id}
+        role={role}
+        companyName={deal.companies?.name ?? "Unknown company"}
+        nextMeeting={deal.next_meeting}
+        championName={champion?.name ?? null}
+      />
     </div>
   )
 }

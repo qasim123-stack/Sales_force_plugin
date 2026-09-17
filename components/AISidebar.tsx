@@ -1,12 +1,28 @@
-export function AISidebar({ role }: { dealId: string; role: string }) {
+import { BriefCard } from "@/components/BriefCard"
+
+export function AISidebar({
+  dealId,
+  role,
+  companyName,
+  nextMeeting,
+  championName,
+}: {
+  dealId: string
+  role: string
+  companyName: string
+  nextMeeting: string | null
+  championName: string | null
+}) {
   const isManager = role === "manager"
 
   return (
     <aside className="w-96 shrink-0 border-l border-gray-200 bg-white p-4">
-      <div className="mb-3 rounded-lg border border-gray-100 p-4">
-        <h2 className="font-semibold text-gray-900">🧠 Pre-meeting Brief</h2>
-        <p className="mt-2 text-sm text-gray-400">Coming soon</p>
-      </div>
+      <BriefCard
+        dealId={dealId}
+        contactName={championName}
+        companyName={companyName}
+        nextMeeting={nextMeeting}
+      />
 
       <div className="mb-3 rounded-lg border border-gray-100 p-4">
         <h2 className="font-semibold text-gray-900">✓ Commitments</h2>
