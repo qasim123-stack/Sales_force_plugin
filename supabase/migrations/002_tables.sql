@@ -68,12 +68,12 @@ CREATE TABLE embeddings (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   deal_id         UUID NOT NULL REFERENCES deals(id) ON DELETE CASCADE,
   content         TEXT NOT NULL,
-  embedding       vector(1536),
+  embedding       vector(768),
   created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE OR REPLACE FUNCTION match_embeddings(
-  query_embedding vector(1536),
+  query_embedding vector(768),
   match_deal_id   UUID,
   match_count     INT DEFAULT 5
 )
