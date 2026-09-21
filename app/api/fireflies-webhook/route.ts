@@ -33,7 +33,8 @@ function isSignatureValid(rawBody: string, signatureHeader: string | null, secre
   return crypto.timingSafeEqual(a, b)
 }
 
-function isTranscriptionCompletedEvent(eventType: string) {
+function isTranscriptionCompletedEvent(eventType: unknown) {
+  if (typeof eventType !== "string") return false
   const normalized = eventType.toLowerCase()
   return normalized.includes("transcri") && normalized.includes("complet")
 }
@@ -108,57 +109,69 @@ async function findDealIdForTitle(title: string): Promise<string | null> {
 }
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text()
-  const secret = process.env.FIREFLIES_WEBHOOK_SECRET
-
-  if (secret) {
-    const signature = req.headers.get("x-hub-signature")
-    if (!isSignatureValid(rawBody, signature, secret)) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
-    }
-  }
-
-  let payload: FirefliesWebhookPayload
   try {
-    payload = JSON.parse(rawBody)
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    const rawBody = await req.text()
+    const secret = process.env.FIREFLIES_WEBHOOK_SECRET
+
+    if (secret) {
+      const signature = req.headers.get("x-hub-signature")
+      if (!isSignatureValid(rawBody, signature, secret)) {
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
+      }
+    }
+
+    let payload: Partial<FirefliesWebhookPayload>
+    try {
+      payload = rawBody ? JSON.parse(rawBody) : {}
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+    }
+
+    console.log("Fireflies webhook received:", payload)
+
+    if (!isTranscriptionCompletedEvent(payload.eventType)) {
+      return NextResponse.json({ status: "ignored", eventType: payload.eventType ?? null })
+    }
+
+    if (!payload.meetingId) {
+      return NextResponse.json({ error: "Missing meetingId" }, { status: 400 })
+    }
+
+    const transcript = await fetchTranscript(payload.meetingId)
+    if (!transcript) {
+      return NextResponse.json({ error: "Failed to fetch transcript" }, { status: 502 })
+    }
+
+    const transcriptText = (transcript.sentences ?? [])
+      .map((s) => `${s.speaker_name}: ${s.text}`)
+      .join("\n")
+
+    const dealId = await findDealIdForTitle(transcript.title ?? "")
+    if (!dealId) {
+      console.error("No deal found to attach transcript to")
+      return NextResponse.json({ error: "No deal found" }, { status: 404 })
+    }
+
+    const admin = createAdminClient()
+    const { error } = await admin.from("meeting_notes").insert({
+      deal_id: dealId,
+      transcript_text: transcriptText || "(empty transcript)",
+      source: "teams",
+      meeting_date: parseMeetingDate(transcript.date),
+      processed: false,
+    })
+
+    if (error) {
+      console.error("Failed to insert meeting_notes", error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ status: "ok" })
+  } catch (err) {
+    console.error("Unhandled error in fireflies-webhook", err)
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Unknown error" },
+      { status: 500 }
+    )
   }
-
-  console.log("Fireflies webhook received:", payload)
-
-  if (!isTranscriptionCompletedEvent(payload.eventType)) {
-    return NextResponse.json({ status: "ignored", eventType: payload.eventType })
-  }
-
-  const transcript = await fetchTranscript(payload.meetingId)
-  if (!transcript) {
-    return NextResponse.json({ error: "Failed to fetch transcript" }, { status: 502 })
-  }
-
-  const transcriptText = transcript.sentences
-    .map((s) => `${s.speaker_name}: ${s.text}`)
-    .join("\n")
-
-  const dealId = await findDealIdForTitle(transcript.title)
-  if (!dealId) {
-    console.error("No deal found to attach transcript to")
-    return NextResponse.json({ error: "No deal found" }, { status: 404 })
-  }
-
-  const admin = createAdminClient()
-  const { error } = await admin.from("meeting_notes").insert({
-    deal_id: dealId,
-    transcript_text: transcriptText || "(empty transcript)",
-    source: "teams",
-    meeting_date: parseMeetingDate(transcript.date),
-    processed: false,
-  })
-
-  if (error) {
-    console.error("Failed to insert meeting_notes", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  return NextResponse.json({ status: "ok" })
 }
