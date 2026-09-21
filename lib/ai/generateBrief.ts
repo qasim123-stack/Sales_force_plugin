@@ -38,7 +38,7 @@ export async function generateBrief(dealId: string): Promise<void> {
 
   const llm = new ChatGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_AI_API_KEY,
-    model: "gemini-2.5-flash",
+    model: "gemini-3.6-flash",
     maxOutputTokens: 1000,
   })
 
