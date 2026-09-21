@@ -37,7 +37,7 @@ export async function extractCommitments(dealId: string, transcript: string): Pr
   const llm = new ChatGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_AI_API_KEY,
     model: "gemini-3.6-flash",
-    maxOutputTokens: 500,
+    maxOutputTokens: 2048,
   })
 
   const chain = prompt.pipe(llm)
