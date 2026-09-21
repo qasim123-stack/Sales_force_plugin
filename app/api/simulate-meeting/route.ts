@@ -25,11 +25,12 @@ function isAuthorized(req: NextRequest): boolean {
   return crypto.timingSafeEqual(a, b)
 }
 
+// TEMPORARY: the VERCEL_ENV === "production" guard is removed so this can be
+// tested directly against production while Preview env vars get sorted out.
+// Restore that check (or delete this whole route) before any real handoff —
+// this endpoint can insert fake meeting_notes/commitments/briefs and spend
+// Gemini API calls against the live database as long as it's reachable here.
 export async function POST(req: NextRequest) {
-  if (process.env.VERCEL_ENV === "production") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 404 })
-  }
-
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
