@@ -36,7 +36,7 @@ If there are no clear commitments in the transcript, return {{ "commitments": []
 export async function extractCommitments(dealId: string, transcript: string): Promise<void> {
   const llm = new ChatGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_AI_API_KEY,
-    model: "gemini-1.5-flash",
+    model: "gemini-2.5-flash",
     maxOutputTokens: 500,
   })
 
