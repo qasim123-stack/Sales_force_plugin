@@ -2,6 +2,8 @@ import crypto from "node:crypto"
 import { NextRequest, NextResponse } from "next/server"
 
 import { createAdminClient } from "@/lib/supabase/admin"
+import { extractCommitments } from "@/lib/ai/extractCommitments"
+import { generateBrief } from "@/lib/ai/generateBrief"
 
 const FIREFLIES_GRAPHQL_URL = "https://api.fireflies.ai/graphql"
 
@@ -153,17 +155,30 @@ export async function POST(req: NextRequest) {
     }
 
     const admin = createAdminClient()
-    const { error } = await admin.from("meeting_notes").insert({
-      deal_id: dealId,
-      transcript_text: transcriptText || "(empty transcript)",
-      source: "teams",
-      meeting_date: parseMeetingDate(transcript.date),
-      processed: false,
-    })
+    const finalTranscriptText = transcriptText || "(empty transcript)"
+    const { data: insertedNote, error } = await admin
+      .from("meeting_notes")
+      .insert({
+        deal_id: dealId,
+        transcript_text: finalTranscriptText,
+        source: "teams",
+        meeting_date: parseMeetingDate(transcript.date),
+        processed: false,
+      })
+      .select("id")
+      .single()
 
-    if (error) {
+    if (error || !insertedNote) {
       console.error("Failed to insert meeting_notes", error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ error: error?.message ?? "Insert failed" }, { status: 500 })
+    }
+
+    try {
+      await extractCommitments(dealId, finalTranscriptText)
+      await generateBrief(dealId)
+      await admin.from("meeting_notes").update({ processed: true }).eq("id", insertedNote.id)
+    } catch (aiError) {
+      console.error("AI processing failed for meeting_notes", insertedNote.id, aiError)
     }
 
     return NextResponse.json({ status: "ok" })
