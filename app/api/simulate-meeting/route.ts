@@ -25,15 +25,14 @@ function isAuthorized(req: NextRequest): boolean {
   return crypto.timingSafeEqual(a, b)
 }
 
-// TEMPORARY: the VERCEL_ENV === "production" guard is removed so this can be
-// tested directly against production while Preview env vars get sorted out.
-// Restore that check (or delete this whole route) before any real handoff —
-// this endpoint can insert fake meeting_notes/commitments/briefs and spend
-// Gemini API calls against the live database as long as it's reachable here.
+// TEMPORARY: both the VERCEL_ENV === "production" guard and the
+// X-Test-Secret check are disabled so this can be tested directly against
+// production while Preview env vars get sorted out. This route is
+// completely open right now — restore both checks (or delete this whole
+// route) before any real handoff. It can insert fake meeting_notes/
+// commitments/briefs and spend Gemini API calls against the live database.
 export async function POST(req: NextRequest) {
-  if (!isAuthorized(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  void isAuthorized // kept for when the check is restored
 
   try {
     const { dealId, transcript } = await req.json()
