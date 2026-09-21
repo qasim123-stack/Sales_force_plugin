@@ -1,9 +1,9 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { JsonOutputParser } from "@langchain/core/output_parsers"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { withRetry } from "@/lib/ai/retry"
+import { extractJson, messageContentToString } from "@/lib/ai/parseJson"
 import type { CommitmentOwner } from "@/lib/supabase/types"
 
 interface ExtractedCommitment {
@@ -40,11 +40,11 @@ export async function extractCommitments(dealId: string, transcript: string): Pr
     maxOutputTokens: 500,
   })
 
-  const chain = prompt.pipe(llm).pipe(
-    new JsonOutputParser<{ commitments: ExtractedCommitment[] }>()
-  )
+  const chain = prompt.pipe(llm)
 
-  const result = await withRetry(() => chain.invoke({ transcript }))
+  const response = await withRetry(() => chain.invoke({ transcript }))
+  const text = messageContentToString(response.content)
+  const result = extractJson<{ commitments: ExtractedCommitment[] }>(text)
   const commitments = result.commitments ?? []
 
   if (commitments.length === 0) return

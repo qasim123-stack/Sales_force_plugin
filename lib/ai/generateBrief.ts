@@ -1,10 +1,10 @@
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
-import { JsonOutputParser } from "@langchain/core/output_parsers"
 
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getDealContext } from "@/lib/ai/context"
 import { withRetry } from "@/lib/ai/retry"
+import { extractJson, messageContentToString } from "@/lib/ai/parseJson"
 
 interface BriefResult {
   summary: string
@@ -42,9 +42,9 @@ export async function generateBrief(dealId: string): Promise<void> {
     maxOutputTokens: 1000,
   })
 
-  const chain = prompt.pipe(llm).pipe(new JsonOutputParser<BriefResult>())
+  const chain = prompt.pipe(llm)
 
-  const result = await withRetry(() =>
+  const response = await withRetry(() =>
     chain.invoke({
       company: context.company,
       stage: context.stage,
@@ -54,6 +54,9 @@ export async function generateBrief(dealId: string): Promise<void> {
       pastMeetings: context.pastMeetings,
     })
   )
+
+  const text = messageContentToString(response.content)
+  const result = extractJson<BriefResult>(text)
 
   const admin = createAdminClient()
   const { error } = await admin.from("briefs").upsert(
