@@ -16,6 +16,8 @@ export interface Commitment {
   status: CommitmentStatus
   created_by: string | null
   created_at: string
+  department: string | null
+  external_ticket_ref: string | null
 }
 
 export function useCommitments(dealId: string) {

@@ -10,6 +10,8 @@ export type Stage =
 export type CommitmentOwner = "rep" | "client" | "presales" | "manager"
 export type CommitmentStatus = "open" | "in_progress" | "done" | "overdue"
 export type MeetingSource = "teams" | "simulated" | "manual" | "seed"
+export type CommitmentEventType = "created" | "status_changed" | "routed"
+export type CommitmentEventActorType = "ai" | "user"
 
 export interface Database {
   public: {
@@ -140,6 +142,8 @@ export interface Database {
           status: CommitmentStatus
           created_by: string | null
           created_at: string
+          department: string | null
+          external_ticket_ref: string | null
         }
         Insert: {
           id?: string
@@ -152,6 +156,8 @@ export interface Database {
           status?: CommitmentStatus
           created_by?: string | null
           created_at?: string
+          department?: string | null
+          external_ticket_ref?: string | null
         }
         Update: {
           id?: string
@@ -163,6 +169,44 @@ export interface Database {
           deadline?: string | null
           status?: CommitmentStatus
           created_by?: string | null
+          created_at?: string
+          department?: string | null
+          external_ticket_ref?: string | null
+        }
+        Relationships: []
+      }
+      commitment_events: {
+        Row: {
+          id: string
+          commitment_id: string
+          event_type: CommitmentEventType
+          from_value: string | null
+          to_value: string | null
+          actor_type: CommitmentEventActorType
+          actor_label: string | null
+          note: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          commitment_id: string
+          event_type: CommitmentEventType
+          from_value?: string | null
+          to_value?: string | null
+          actor_type?: CommitmentEventActorType
+          actor_label?: string | null
+          note?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          commitment_id?: string
+          event_type?: CommitmentEventType
+          from_value?: string | null
+          to_value?: string | null
+          actor_type?: CommitmentEventActorType
+          actor_label?: string | null
+          note?: string | null
           created_at?: string
         }
         Relationships: []
