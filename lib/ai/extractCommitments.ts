@@ -50,18 +50,33 @@ export async function extractCommitments(dealId: string, transcript: string): Pr
   if (commitments.length === 0) return
 
   const admin = createAdminClient()
-  const { error } = await admin.from("commitments").insert(
-    commitments.map((c) => ({
-      deal_id: dealId,
-      agreed_text: c.agreed_text,
-      next_steps: c.next_steps ?? null,
-      owner: c.owner,
-      deadline: c.deadline ?? null,
-      status: "open" as const,
-    }))
-  )
+  const { data: inserted, error } = await admin
+    .from("commitments")
+    .insert(
+      commitments.map((c) => ({
+        deal_id: dealId,
+        agreed_text: c.agreed_text,
+        next_steps: c.next_steps ?? null,
+        owner: c.owner,
+        deadline: c.deadline ?? null,
+        status: "open" as const,
+      }))
+    )
+    .select("id")
 
   if (error) {
     throw new Error(`Failed to insert commitments: ${error.message}`)
+  }
+
+  if (inserted && inserted.length > 0) {
+    await admin.from("commitment_events").insert(
+      inserted.map((row) => ({
+        commitment_id: row.id,
+        event_type: "created" as const,
+        actor_type: "ai" as const,
+        actor_label: "AI (Gemini)",
+        note: "Extracted from meeting transcript",
+      }))
+    )
   }
 }

@@ -46,16 +46,32 @@ export function CommitmentForm({ dealId, onSaved }: { dealId: string; onSaved: (
 
     const supabase = createClient()
     const { data: userData } = await supabase.auth.getUser()
+    const actorLabel =
+      (userData.user?.user_metadata?.name as string) ?? userData.user?.email ?? "Unknown user"
 
-    await supabase.from("commitments").insert({
-      deal_id: dealId,
-      agreed_text: agreedText,
-      next_steps: nextSteps || null,
-      handoff_notes: handoffNotes || null,
-      owner,
-      deadline: deadline || null,
-      created_by: userData.user?.id ?? null,
-    })
+    const { data: inserted } = await supabase
+      .from("commitments")
+      .insert({
+        deal_id: dealId,
+        agreed_text: agreedText,
+        next_steps: nextSteps || null,
+        handoff_notes: handoffNotes || null,
+        owner,
+        deadline: deadline || null,
+        created_by: userData.user?.id ?? null,
+      })
+      .select("id")
+      .single()
+
+    if (inserted) {
+      await supabase.from("commitment_events").insert({
+        commitment_id: inserted.id,
+        event_type: "created",
+        actor_type: "user",
+        actor_label: actorLabel,
+        note: "Added manually",
+      })
+    }
 
     setSaving(false)
     reset()
