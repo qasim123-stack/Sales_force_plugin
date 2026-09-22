@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/client"
 import { DEPARTMENT_OPTIONS, generateMockTicketRef, departmentLabel } from "@/lib/commitmentEvents"
+import { isAcceptedAttachmentType, uploadCommitmentAttachment } from "@/lib/attachments"
 import type { CommitmentStatus } from "@/lib/supabase/types"
 
 export function RouteCommitmentDialog({
@@ -36,7 +38,30 @@ export function RouteCommitmentDialog({
   const [open, setOpen] = useState(false)
   const [department, setDepartment] = useState<string>("finance")
   const [customDepartment, setCustomDepartment] = useState("")
+  const [instructions, setInstructions] = useState("")
+  const [file, setFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0] ?? null
+    setFileError(null)
+    if (selected && !isAcceptedAttachmentType(selected)) {
+      setFileError("Only PDF and Word files are accepted")
+      setFile(null)
+      return
+    }
+    setFile(selected)
+  }
+
+  function reset() {
+    setCustomDepartment("")
+    setInstructions("")
+    setFile(null)
+    setFileError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
 
   async function handleRoute() {
     const resolvedDepartment =
@@ -57,22 +82,43 @@ export function RouteCommitmentDialog({
       .update({
         department: resolvedDepartment,
         external_ticket_ref: ticketRef,
+        routing_instructions: instructions || null,
         status: currentStatus === "open" ? "in_progress" : currentStatus,
       })
       .eq("id", commitmentId)
 
-    await supabase.from("commitment_events").insert({
-      commitment_id: commitmentId,
-      event_type: "routed",
-      to_value: resolvedDepartment,
-      actor_type: "user",
-      actor_label: actorLabel,
-      note: `Simulated ticket created: ${ticketRef}`,
-    })
+    const noteLine = instructions
+      ? `Ticket ${ticketRef} — ${instructions}`
+      : `Ticket ${ticketRef}`
+
+    const { data: eventRow } = await supabase
+      .from("commitment_events")
+      .insert({
+        commitment_id: commitmentId,
+        event_type: "routed",
+        to_value: resolvedDepartment,
+        actor_type: "user",
+        actor_label: actorLabel,
+        note: noteLine,
+      })
+      .select("id")
+      .single()
+
+    if (file && eventRow) {
+      const { error } = await uploadCommitmentAttachment({
+        commitmentId,
+        commitmentEventId: eventRow.id,
+        file,
+        uploadedBy: userData.user?.id ?? null,
+      })
+      if (error) {
+        setFileError(error)
+      }
+    }
 
     setSaving(false)
     setOpen(false)
-    setCustomDepartment("")
+    reset()
     onRouted()
   }
 
@@ -119,6 +165,27 @@ export function RouteCommitmentDialog({
               />
             </div>
           )}
+          <div className="space-y-2">
+            <Label htmlFor="instructions">Instructions for this team</Label>
+            <Textarea
+              id="instructions"
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              placeholder="What do they need to know or do?"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="attachment">Attach a file (optional)</Label>
+            <Input
+              id="attachment"
+              type="file"
+              ref={fileInputRef}
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileChange}
+            />
+            {file && <p className="text-xs text-gray-500">{file.name}</p>}
+            {fileError && <p className="text-xs text-red-600">{fileError}</p>}
+          </div>
           <Button
             className="w-full"
             onClick={handleRoute}
