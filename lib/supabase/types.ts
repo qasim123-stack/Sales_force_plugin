@@ -144,6 +144,7 @@ export interface Database {
           created_at: string
           department: string | null
           external_ticket_ref: string | null
+          routing_instructions: string | null
         }
         Insert: {
           id?: string
@@ -158,6 +159,7 @@ export interface Database {
           created_at?: string
           department?: string | null
           external_ticket_ref?: string | null
+          routing_instructions?: string | null
         }
         Update: {
           id?: string
@@ -172,6 +174,43 @@ export interface Database {
           created_at?: string
           department?: string | null
           external_ticket_ref?: string | null
+          routing_instructions?: string | null
+        }
+        Relationships: []
+      }
+      commitment_attachments: {
+        Row: {
+          id: string
+          commitment_id: string
+          commitment_event_id: string | null
+          file_name: string
+          storage_path: string
+          file_type: string | null
+          file_size: number | null
+          uploaded_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          commitment_id: string
+          commitment_event_id?: string | null
+          file_name: string
+          storage_path: string
+          file_type?: string | null
+          file_size?: number | null
+          uploaded_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          commitment_id?: string
+          commitment_event_id?: string | null
+          file_name?: string
+          storage_path?: string
+          file_type?: string | null
+          file_size?: number | null
+          uploaded_by?: string | null
+          created_at?: string
         }
         Relationships: []
       }
