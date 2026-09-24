@@ -15,8 +15,9 @@ export interface DealCardProps {
 
 export function DealCard({ id, title, companyName, stage, value, daysInStage }: DealCardProps) {
   return (
-    <Link href={`/deals/${id}`} className="block h-full">
-      <div className="flex h-full flex-col justify-between rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+    <Link href={`/deals/${id}`} className="group block h-full">
+      <div className="relative flex h-full flex-col justify-between overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl">
+        <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-emerald-500 transition-transform duration-200 group-hover:scale-x-100" />
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-semibold text-gray-900" title={title}>

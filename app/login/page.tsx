@@ -36,8 +36,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-sm">
+    <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(ellipse_at_top,_#173d27_0%,_#0a1f13_55%,_#050f09_100%)]">
+      <Card className="w-full max-w-sm shadow-2xl">
         <CardHeader>
           <CardTitle>SalesIQ</CardTitle>
           <CardDescription>Sign in to your CRM</CardDescription>

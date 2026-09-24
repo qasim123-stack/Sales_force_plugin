@@ -55,7 +55,7 @@ export default async function DealPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)]">
+    <div className="flex min-h-[70vh]">
       <DealDetail deal={deal} contacts={contacts ?? []} meetingNotes={meetingNotes ?? []} />
       <AISidebar
         dealId={deal.id}
