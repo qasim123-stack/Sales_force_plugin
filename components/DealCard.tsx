@@ -16,27 +16,27 @@ export interface DealCardProps {
 export function DealCard({ id, title, companyName, stage, value, daysInStage }: DealCardProps) {
   return (
     <Link href={`/deals/${id}`} className="block h-full">
-      <div className="flex h-full flex-col justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex h-full flex-col justify-between rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-gray-900" title={title}>
+            <h3 className="truncate text-lg font-semibold text-gray-900" title={title}>
               {title}
             </h3>
-            <p className="truncate text-sm text-gray-500" title={companyName}>
+            <p className="mt-1 truncate text-base text-gray-500" title={companyName}>
               {companyName}
             </p>
           </div>
-          <Badge className={`shrink-0 whitespace-nowrap ${STAGE_STYLES[stage]}`}>
+          <Badge className={`shrink-0 whitespace-nowrap px-3 py-1 text-sm ${STAGE_STYLES[stage]}`}>
             {STAGE_LABELS[stage]}
           </Badge>
         </div>
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-          <span className="font-medium">
+        <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4 text-base text-gray-600">
+          <span className="text-xl font-semibold text-gray-900">
             {value != null
               ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value)
               : "—"}
           </span>
-          <span className="shrink-0">{daysInStage} days in stage</span>
+          <span className="shrink-0 text-sm text-gray-500">{daysInStage} days in stage</span>
         </div>
       </div>
     </Link>
