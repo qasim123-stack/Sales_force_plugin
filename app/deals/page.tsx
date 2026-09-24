@@ -21,8 +21,8 @@ export default async function DealsPage() {
     .returns<DealRow[]>()
 
   return (
-    <main className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-6 py-12">
-      <div className="w-full max-w-6xl">
+    <main className="px-6 py-10 sm:px-10 sm:py-12">
+      <div className="mx-auto w-full max-w-6xl">
         <h1 className="mb-8 text-3xl font-semibold text-gray-900">Deals</h1>
 
         {error && (
