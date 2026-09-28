@@ -3,13 +3,20 @@
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export function ScheduleZoomMeetingButton({ dealId }: { dealId: string }) {
+  const [scheduledAt, setScheduledAt] = useState("")
   const [loading, setLoading] = useState(false)
   const [joinUrl, setJoinUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleClick() {
+    if (!scheduledAt) {
+      setError("Pick a date and time first")
+      return
+    }
+
     setLoading(true)
     setError(null)
     setJoinUrl(null)
@@ -18,7 +25,7 @@ export function ScheduleZoomMeetingButton({ dealId }: { dealId: string }) {
       const res = await fetch("/api/schedule-zoom-meeting", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dealId }),
+        body: JSON.stringify({ dealId, scheduledAt: new Date(scheduledAt).toISOString() }),
       })
       const data = await res.json()
 
@@ -37,10 +44,16 @@ export function ScheduleZoomMeetingButton({ dealId }: { dealId: string }) {
 
   return (
     <div className="mt-4 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-3">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-blue-900">
-          📹 Schedule a Zoom meeting for this deal — transcript syncs automatically when it ends
-        </p>
+      <p className="text-sm text-blue-900">
+        📹 Schedule a Zoom meeting for this deal — transcript syncs automatically when it ends
+      </p>
+      <div className="mt-2 flex items-center gap-2">
+        <Input
+          type="datetime-local"
+          value={scheduledAt}
+          onChange={(e) => setScheduledAt(e.target.value)}
+          className="max-w-[220px] bg-white text-sm"
+        />
         <Button size="sm" onClick={handleClick} disabled={loading}>
           {loading ? "Scheduling..." : "Schedule →"}
         </Button>
