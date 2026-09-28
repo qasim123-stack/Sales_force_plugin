@@ -48,6 +48,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/teams-webhook|api/simulate-meeting|api/fireflies-webhook).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/teams-webhook|api/simulate-meeting|api/fireflies-webhook|api/zoom-webhook).*)",
   ],
 }
