@@ -6,7 +6,7 @@ export interface ZoomMeeting {
   topic: string
 }
 
-export async function createZoomMeeting(topic: string): Promise<ZoomMeeting> {
+export async function createZoomMeeting(topic: string, startTimeIso: string): Promise<ZoomMeeting> {
   const hostUserId = process.env.ZOOM_HOST_USER_ID
   if (!hostUserId) {
     throw new Error("ZOOM_HOST_USER_ID is not configured")
@@ -25,6 +25,8 @@ export async function createZoomMeeting(topic: string): Promise<ZoomMeeting> {
       body: JSON.stringify({
         topic,
         type: 2,
+        start_time: startTimeIso,
+        timezone: "UTC",
         settings: {
           auto_recording: "cloud",
         },
