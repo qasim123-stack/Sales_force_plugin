@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { ScheduleZoomMeetingButton } from "@/components/ScheduleZoomMeetingButton"
 import { STAGE_STYLES, STAGE_LABELS } from "@/lib/stage"
 import type { Stage, MeetingSource } from "@/lib/supabase/types"
 
@@ -30,6 +31,7 @@ export interface DealDetailMeetingNote {
 
 const SOURCE_LABELS: Record<MeetingSource, string> = {
   teams: "Teams",
+  zoom: "Zoom",
   simulated: "Simulated",
   manual: "Manual",
   seed: "Past meeting",
@@ -91,6 +93,8 @@ export function DealDetail({
             </div>
           </div>
         </div>
+
+        <ScheduleZoomMeetingButton dealId={deal.id} />
       </div>
 
       <div className="mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

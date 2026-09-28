@@ -9,7 +9,7 @@ export type Stage =
 
 export type CommitmentOwner = "rep" | "client" | "presales" | "manager"
 export type CommitmentStatus = "open" | "in_progress" | "done" | "overdue"
-export type MeetingSource = "teams" | "simulated" | "manual" | "seed"
+export type MeetingSource = "teams" | "zoom" | "simulated" | "manual" | "seed"
 export type CommitmentEventType = "created" | "status_changed" | "routed"
 export type CommitmentEventActorType = "ai" | "user"
 
@@ -277,6 +277,39 @@ export interface Database {
           context_tags?: { label: string; category: string }[]
           risk_flags?: string[]
           generated_at?: string
+        }
+        Relationships: []
+      }
+      scheduled_meetings: {
+        Row: {
+          id: string
+          deal_id: string
+          zoom_meeting_id: string
+          join_url: string
+          topic: string
+          scheduled_at: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          deal_id: string
+          zoom_meeting_id: string
+          join_url: string
+          topic: string
+          scheduled_at?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          deal_id?: string
+          zoom_meeting_id?: string
+          join_url?: string
+          topic?: string
+          scheduled_at?: string
+          created_by?: string | null
+          created_at?: string
         }
         Relationships: []
       }
